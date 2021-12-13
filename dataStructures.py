@@ -210,10 +210,28 @@ class kdTree(object):
     def constructTreeDriver(self):
         self.rootNode = self.constructTree(0,len(self.dataset)-1,0)
 
+class adjacencyVertices(object):
+    def __init__(self,data):
+       self.data = data
+
+class adjacencyNode(object):
+    def __init__(self, vertex):
+        # vertex associated with the adjacency edge (vertex number)
+        self.vertex = vertex
+        # edge to the next vertex in the adjacency list
+        self.next = None
 
 
 # class for the multilayer graph to be implemented as part of the hierarchal small world graphs implementation
 class multiLayerGraph(object):
     def __init__(self):
-        # do stuff
-        stuff =1
+        # basic idea in a small world graph is the following:
+        # edges in each layer scale logarithmically and the final layer will have a neighborhood of closest neighbors (in theory)
+        # having a list of possible vertices
+        # layers in the graph, where each layer contains an adjacency list
+        # each layer contains a single adjacency list for greedy search
+        # layer 0 will contain the most edges, to nail down approximate knn
+        # topmost layer will have an entry point with sparse edges
+        self.vertices = []
+        self.layers = [[]]
+        # double list because each layer contains a list of linked lists (each layer has an adjacency list)
