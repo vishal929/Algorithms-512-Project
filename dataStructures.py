@@ -1,14 +1,85 @@
 # python file that houses our defined data structures and some helper functions
 
-# helper function to get the median of the dataset based on a specific feature
-def medianFeature(dataArray,featureToUse):
+
+# helper function for selection
+def select(dataset,i,j,featureForSelection):
+
+
+# helper function to run insertion sort on part of an array based on a specific feature
+def insertionSortFeature(dataset, i,j, featureToUse):
+    # sorts the array based on the feature using insertion sort
+    for k in range(i+1,j+1):
+        value = dataset[k][featureToUse]
+        lastIndex = k-1
+        lastValue = dataset[lastIndex][featureToUse]
+        while value < lastValue:
+            lastIndex -= 1
+            lastValue = dataset[lastIndex][featureToUse]
+        # swap lastIndex +1 with the current k value
+        temp = dataset[lastIndex+1]
+        dataset[lastIndex+1] = dataset[k]
+        dataset[k] = temp
+    # array is sorted in place
+
+
+
+# helper function to get the median of medians of the portion of the dataset based on a specific feature
+def medianFeature(dataArray,i,j,featureToUse):
+    if j-i+1 <= 5:
+        # we will just call insertion sort and return the median position
+        insertionSortFeature(dataArray,i,j,featureToUse)
+        return (i+j)/2
+    # else, we can split the input into subarray of at most 5 elements, compute the median of those
+    # then recursively call to grab the median of the medians
+    currList = []
+    medianList = []
+    numAppended = 0
+    for k in range(i,j+1):
+        currList.append(dataArray[k])
+        numAppended += 1
+        if numAppended % 5 == 0 :
+            # then we compute the median and append it to the median list
+            insertionSortFeature(currList,0,len(currList)-1,featureToUse)
+            # appending the median
+            medianList.append(currList[int((len(currList)-1)/2)])
+            # resetting the current list
+            currList = []
+    # might have incomplete list here
+    if len(currList)!=0:
+        # sorting list of size at most 5
+        insertionSortFeature(currList, 0, len(currList) - 1, featureToUse)
+        # appending the median
+        medianList.append(currList[int((len(currList) - 1) / 2)])
+        # resetting the current list
+        currList = []
+    # now we have a list of medians of medians
+
+
+
+
+
 
 
 # helper function to pivot a dataset based on a certain feature value
-# pivots the array about the median of the array
+# pivots the array about a partition point -> does it in place
 def partitionFeature(dataset, i,j, featureToPivot, indexToPivot):
-    lower = []
-    higher = []
+    if indexToPivot != j:
+        # then we can swap them so we always partition about the last index
+        temp = dataset[j]
+        dataset[j] = dataset[indexToPivot]
+        dataset[indexToPivot] = temp
+    pivotValue = dataset[indexToPivot][featureToPivot]
+    z = i -1
+    for k in range(i,j):
+        if dataset[k][featureToPivot] <= pivotValue:
+           z += 1
+
+    z += 1
+    temp = dataset[j]
+    dataset[j] = dataset[z]
+    dataset[z] = temp
+    # returning the index where the pivot was placed
+    return z
 
 class maxHeap(object):
     def __init__(self):
