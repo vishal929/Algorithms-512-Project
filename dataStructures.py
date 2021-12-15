@@ -1,5 +1,6 @@
 # python file that houses our defined data structures and some helper functions
 
+from copy import deepcopy
 
 # helper function for selection
 # selects kth smallest
@@ -388,13 +389,15 @@ class multiLayerGraph(object):
                 neighbors = self.getNeighborhood(candidate,layerNumber)
                 for neighbor in neighbors:
                     # neighbor is a vertex number
+                    # realNeighbor is the data tuple
+                    realNeighbor = self.vertices[neighbor]
                     # checking if the neighbor is already in W or not
                     present = False
                     for element in W.arr:
                         if element[0] == neighbor:
                             present = True
                     if not present:
-                        W.insert((neighbor, distanceFunction(e,neighbor)))
+                        W.insert((neighbor, distanceFunction(e,realNeighbor)))
         # initializing minHeap for discarded connections
         # this is a minHeap because if keepPruned is true, we might need to reference the distance again
         WDiscard = minHeap()
@@ -414,5 +417,44 @@ class multiLayerGraph(object):
 
         # returning the max heap of up to M neighbors from the candidate list C
         return R
-
+    # enter points are the entrance points of the layer (list of vertex numbers)
+    # e is the query element
+    # numNearest is the number of nearest neighbors to e in the layer to find
+    # layerNumber is the layer of interest to search in the graph
+    def searchLayer(self,e,enterPoints,numNearest,layerNumber, distanceFunction):
+        v = deepcopy(enterPoints)
+        distanceArray = deepcopy(v)
+        for i in range(len(distanceArray)):
+            dataTuple = self.vertices[distanceArray[i]]
+            distanceArray[i] = (distanceArray[i], distanceFunction(e,dataTuple))
+        C = minHeap()
+        C.heapify(deepcopy(distanceArray))
+        W = maxHeap()
+        W.heapify(distanceArray)
+        while C.size()>0:
+            closest = C.peekMin()
+            furthest = W.peekMax()
+            if closest[1] > furthest[1]:
+                # no more filtering to do
+                break
+            neighborhood = self.getNeighborhood(closest[0],layerNumber)
+            for neighbor in neighborhood:
+                present = False
+                for element in v:
+                    if element == neighbor:
+                        present = True
+                        break
+                if not present:
+                    neighborData = self.vertices[neighbor]
+                    D = distanceFunction(e,neighborData)
+                    v.append(neighbor)
+                    # possibly updating C and W
+                    if D < furthest[1] or W.size()<numNearest:
+                       C.insert((neighbor,D))
+                       W.insert((neighbor,D))
+                       if W.size()>numNearest:
+                           # removing the "worst" distance element from W
+                           W.extractMax()
+        # returning maxHeap of nearest neighbors of e in the given layer based on neighbors of enter points
+        return W
 
