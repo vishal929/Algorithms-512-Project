@@ -159,6 +159,12 @@ class minHeap(object):
         # sifting down
         self.siftDown(0)
         return maxData
+    # function to build the heap from a specific array (linear time)
+    def heapify(self, array):
+        self.arr = array
+        # going from the back of the array and calling sift down
+        for i in range(len(self.arr) - 1, -1, -1):
+            self.siftDown(i)
 
 class maxHeap(object):
     def __init__(self):
@@ -237,6 +243,12 @@ class maxHeap(object):
         # sifting down
         self.siftDown(0)
         return maxData
+    # function to build the heap from a specific array (linear time)
+    def heapify(self, array):
+        self.arr = array
+        # going from the back of the array and calling sift down
+        for i in range(len(self.arr)-1,-1,-1):
+            self.siftDown(i)
 
 # class for nodes in a kdtree
 class kdNode(object):
