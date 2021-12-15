@@ -467,12 +467,12 @@ class multiLayerGraph(object):
     # constructParam is the size of the dynamic candidate list
     # normalizer is a normalizing constant for level choosing
     # usingHeuristic is a flag where if true, we heuristically select neighbors, where if false, we simple select
-    def insertElement(self, newElement, M, MMax, constructParam, normalizer, distanceFunction, usingHeuristic, keepPrunedConnections, extendCandidates=False):
+    def insertElement(self, newElement, M, MMax, MMax0, constructParam, normalizer, distanceFunction, usingHeuristic, keepPrunedConnections, extendCandidates=False):
         # firstly adding the newElement data to our list of vertices to keep a vertex number
         self.vertices.append(newElement)
         # index of vertex in the vertex list
         vertexNumber = len(self.vertices)-1
-        enterPoint = self.enterPoint
+        enterPoint = [self.enterPoint]
         # getting top level (where the enter point is)
         topLevel = len(self.layers)-1
         # getting the new elements level based on decaying logarithm
@@ -493,7 +493,7 @@ class multiLayerGraph(object):
                if smallestTuple is None or smallestTuple[1]>element[1]:
                    smallestTuple = (element[0], element[1])
             # setting enter point for the future as the closest neighbor ("greedy")
-            enterPoint = smallestTuple[0]
+            enterPoint = [smallestTuple[0]]
         for i in range(min(topLevel,newLayer),-1,-1):
             W = self.searchLayer(newElement,enterPoint,constructParam,i,distanceFunction)
             # getting just array of vertex numbers
@@ -518,7 +518,32 @@ class multiLayerGraph(object):
                 # adding to front of list for the new element
                 newNode.next = layerAdjacencyList[vertexNumber]
                 layerAdjacencyList[vertexNumber] = newNode
-            # shrinking connections part
+            # shrinking connections if needed
+            for neighbor in neighbors.arr:
+                innerNeighborhood = self.getNeighborhood(neighbor[0],i)
+                maxConnectionsAllowed = MMax
+                if i ==0: maxConnectionsAllowed = MMax0
+                if len(innerNeighborhood)>maxConnectionsAllowed:
+                    # then we need to shrink the neighborhood
+                    newNeighborhood = None
+                    if usingHeuristic:
+                        newNeighborhood = self.selectNeighborsHeuristic(distanceFunction, self.vertices[neighbor[0]], innerNeighborhood,maxConnectionsAllowed,i,keepPrunedConnections,extendCandidates)
+                    else:
+                        newNeighborhood = self.selectNeighborSimple(self.vertices[neighbor[0]],innerNeighborhood,maxConnectionsAllowed,distanceFunction)
+                    # shrinking the neighborhood (this breaks bidirectionality, turns directed)
+                    layerAdjacencyList = self.layers[i]
+                    # removing the original edge list
+                    layerAdjacencyList[neighbor[0]] = None
+                    # adding the new edges, forming the new neighborhood
+                    for newNeighbor in newNeighborhood.arr:
+                        newNode = adjacencyNode(newNeighbor[0])
+                        newNode.next = layerAdjacencyList[neighbor[0]]
+                        layerAdjacencyList[neighbor[0]] = newNode
+            # setting the new enter points
+            enterPoint = vertexNumbers
+        if newLayer > topLevel:
+            self.enterPoint = vertexNumber
+        # done with insertion
 
 
 
