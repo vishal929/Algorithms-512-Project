@@ -331,6 +331,52 @@ class multiLayerGraph(object):
         # each layer contains a single adjacency list for greedy search
         # layer 0 will contain the most edges, to nail down approximate knn
         # topmost layer will have an entry point with sparse edges
+        # self.vertices is a list mapping vertex number to the tuple of data
         self.vertices = []
-        self.layers = [[]]
+        # self.layers is a list of layers of adjacency lists for the hierarchal structure
+        # adjacency lists have a vertex number
+        self.layers = []
         # double list because each layer contains a list of linked lists (each layer has an adjacency list)
+    # gets neighborhood of a node in a given layer
+    # v is the vertex to get the neighborhood of (v has an index)
+    # G is the multi layer graph
+    # layerNumber is the layer to consider in neighbor-grabbing
+    def getNeighborhood(self, v, layerNumber):
+        neighbors = []
+        startNode = self.layers[layerNumber][v]
+        nextNode = startNode.next
+        while nextNode is not None:
+            neighbors.append(nextNode)
+            nextNode = nextNode.next
+        # returning vertex numbers of the neighbors in the layer
+        return neighbors
+
+    # simple method of getting neighbors
+    # e is the actual element tuple for comparison
+    # C is a list of other element tuples that represents a candidate list
+    # M is the number of neighbors to grab
+    def selectNeighborSimple(self, e, C, M, distanceFunction):
+        # initializing a max heap of size M
+        Q = maxHeap()
+        for candidate in C:
+            # calculating the distance
+            D = distanceFunction(e, candidate)
+            if Q.size() < M:
+                Q.insert((candidate, D))
+            else:
+                if Q.peekMax()[1] > D:
+                    Q.extractMax()
+                    Q.insert((candidate, D))
+        # returning the queue of up to M neighbors from the candidate list C
+        return Q
+
+    # heuristic method of getting neighbors
+    def selectNeighborsHeuristic(self, e, C, M, layerNumber, keepPrunedConnections, extendCandidates=False):
+        # R is a max heap
+        R = maxHeap()
+        # min heap of candidate datapoints
+        # assuming that C has input as an array, so we have to heapify into W
+        W = minHeap().heapify(C)
+        if extendCandidates:
+            for candidate in C:
+                neighbors = self.getNeighborhood()
