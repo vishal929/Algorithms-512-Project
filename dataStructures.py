@@ -1,6 +1,8 @@
 # python file that houses our defined data structures and some helper functions
 
 from copy import deepcopy
+from math import log
+from random import random
 
 # helper function for selection
 # selects kth smallest
@@ -315,11 +317,9 @@ class adjacencyVertices(object):
        self.data = data
 
 class adjacencyNode(object):
-    def __init__(self, vertexNumber, data):
+    def __init__(self, vertexNumber):
         # vertex associated with the adjacency edge (vertex number)
         self.vertex = vertexNumber
-        # data associated with the node
-        self.data = data
         # edge to the next vertex in the adjacency list
         self.next = None
 
@@ -339,6 +339,9 @@ class multiLayerGraph(object):
         # self.layers is a list of layers of adjacency lists for the hierarchal structure
         # adjacency lists have a vertex number
         self.layers = [] # array of arrays of type adjacencyNode
+        # hierarchal structure has a fixed entry point to the top layer in the graph
+        # this is changed during construction
+        self.enterPoint = None
     # gets neighborhood of a node in a given layer
     # v is the vertex to get the neighborhood of (v has an index)
     # G is the multi layer graph
@@ -457,4 +460,67 @@ class multiLayerGraph(object):
                            W.extractMax()
         # returning maxHeap of nearest neighbors of e in the given layer based on neighbors of enter points
         return W
+    # main function for constructing the multi layer graph
+    # newElement is the element to insert
+    # M is the number of established connections
+    # MMax is the max allowed connections on a vertex
+    # constructParam is the size of the dynamic candidate list
+    # normalizer is a normalizing constant for level choosing
+    # usingHeuristic is a flag where if true, we heuristically select neighbors, where if false, we simple select
+    def insertElement(self, newElement, M, MMax, constructParam, normalizer, distanceFunction, usingHeuristic, keepPrunedConnections, extendCandidates=False):
+        # firstly adding the newElement data to our list of vertices to keep a vertex number
+        self.vertices.append(newElement)
+        # index of vertex in the vertex list
+        vertexNumber = len(self.vertices)-1
+        enterPoint = self.enterPoint
+        # getting top level (where the enter point is)
+        topLevel = len(self.layers)-1
+        # getting the new elements level based on decaying logarithm
+        randomUniform = random()
+        # will have an issue if random actually gives 0 because of the logarithm
+        # if it ever gives precisely 0, we just map it to 1
+        if randomUniform == 0:
+            randomUniform = 1
+        newLayer = int(-log(randomUniform) * normalizer)
+        # newLayer+2 since range is not inclusive
+        for i in range(topLevel,newLayer+2,1):
+            # ef = 1
+            W = self.searchLayer(newElement,enterPoint,1,i,distanceFunction)
+            # above is a maxHeap
+            # tuple of vertex number and distance from newElement
+            smallestTuple = None
+            for element in W.arr:
+               if smallestTuple is None or smallestTuple[1]>element[1]:
+                   smallestTuple = (element[0], element[1])
+            # setting enter point for the future as the closest neighbor ("greedy")
+            enterPoint = smallestTuple[0]
+        for i in range(min(topLevel,newLayer),-1,-1):
+            W = self.searchLayer(newElement,enterPoint,constructParam,i,distanceFunction)
+            # getting just array of vertex numbers
+            vertexNumbers = []
+            for element in W.arr:
+                vertexNumbers.append(element[0])
+            neighbors = None
+            if usingHeuristic:
+                neighbors = self.selectNeighborsHeuristic(distanceFunction,newElement,vertexNumbers,M,i,keepPrunedConnections,extendCandidates)
+            else:
+                neighbors = self.selectNeighborSimple(newElement,vertexNumbers,M,distanceFunction)
+            # setting edges from newElement to neighbors in the graph at layer i
+            layerAdjacencyList = self.layers[i]
+            # neighbors are already in the list
+            for neighbor in neighbors.arr:
+                # adding to front of the list
+                newNode = adjacencyNode(neighbor[0])
+                anotherNode = adjacencyNode(vertexNumber)
+                # adding to front of list for the neighbor
+                anotherNode.next=layerAdjacencyList[neighbor[0]]
+                layerAdjacencyList[neighbor[0]]=anotherNode
+                # adding to front of list for the new element
+                newNode.next = layerAdjacencyList[vertexNumber]
+                layerAdjacencyList[vertexNumber] = newNode
+            # shrinking connections part
+
+
+
+
 
