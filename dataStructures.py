@@ -2,8 +2,9 @@
 
 
 # helper function for selection
-def select(dataset,i,j,featureForSelection):
-
+# selects kth smallest
+def select(dataset,i,j,featureForSelection, k):
+    pass
 
 # helper function to run insertion sort on part of an array based on a specific feature
 def insertionSortFeature(dataset, i,j, featureToUse):
@@ -195,7 +196,11 @@ class kdTree(object):
             return None
 
         # pivoting data based on which feature we are using now
-        mid = pivotFeature(self.dataset,i,j,featureToSplit)
+        # REPLACE: For right now, just using insertion sort and picking the middle point
+        insertionSortFeature(self.dataset,i,j,featureToSplit)
+        mid = int((i+j)/2)
+        # put logic below for selection of the mid value
+        #mid = pivotFeature(self.dataset,i,j,featureToSplit)
         # incrementing the feature to split on next
         featureToSplit += 1
         parent = kdNode(self.dataset[mid],featureToSplit, None, None)
