@@ -314,9 +314,11 @@ class adjacencyVertices(object):
        self.data = data
 
 class adjacencyNode(object):
-    def __init__(self, vertex):
+    def __init__(self, vertexNumber, data):
         # vertex associated with the adjacency edge (vertex number)
-        self.vertex = vertex
+        self.vertex = vertexNumber
+        # data associated with the node
+        self.data = data
         # edge to the next vertex in the adjacency list
         self.next = None
 
@@ -332,11 +334,10 @@ class multiLayerGraph(object):
         # layer 0 will contain the most edges, to nail down approximate knn
         # topmost layer will have an entry point with sparse edges
         # self.vertices is a list mapping vertex number to the tuple of data
-        self.vertices = []
+        self.vertices = [] # array of
         # self.layers is a list of layers of adjacency lists for the hierarchal structure
         # adjacency lists have a vertex number
-        self.layers = []
-        # double list because each layer contains a list of linked lists (each layer has an adjacency list)
+        self.layers = [] # array of arrays of type adjacencyNode
     # gets neighborhood of a node in a given layer
     # v is the vertex to get the neighborhood of (v has an index)
     # G is the multi layer graph
@@ -346,7 +347,7 @@ class multiLayerGraph(object):
         startNode = self.layers[layerNumber][v]
         nextNode = startNode.next
         while nextNode is not None:
-            neighbors.append(nextNode)
+            neighbors.append(nextNode.vertex)
             nextNode = nextNode.next
         # returning vertex numbers of the neighbors in the layer
         return neighbors
@@ -359,24 +360,59 @@ class multiLayerGraph(object):
         # initializing a max heap of size M
         Q = maxHeap()
         for candidate in C:
+            # candidate is just a vertex number
+            # realCandidate is the data tuple
+            realCandidate = self.vertices[candidate]
             # calculating the distance
-            D = distanceFunction(e, candidate)
+            D = distanceFunction(e, realCandidate)
             if Q.size() < M:
                 Q.insert((candidate, D))
             else:
                 if Q.peekMax()[1] > D:
                     Q.extractMax()
                     Q.insert((candidate, D))
-        # returning the queue of up to M neighbors from the candidate list C
+        # returning the maxHeap of up to M neighbors from the candidate list C
         return Q
 
     # heuristic method of getting neighbors
-    def selectNeighborsHeuristic(self, e, C, M, layerNumber, keepPrunedConnections, extendCandidates=False):
+    def selectNeighborsHeuristic(self, distanceFunction, e, C, M, layerNumber, keepPrunedConnections, extendCandidates=False):
         # R is a max heap
         R = maxHeap()
         # min heap of candidate datapoints
         # assuming that C has input as an array, so we have to heapify into W
-        W = minHeap().heapify(C)
+        W = minHeap()
+        W.heapify(C)
         if extendCandidates:
             for candidate in C:
-                neighbors = self.getNeighborhood()
+                # candidate is the vertex number here
+                neighbors = self.getNeighborhood(candidate,layerNumber)
+                for neighbor in neighbors:
+                    # neighbor is a vertex number
+                    # checking if the neighbor is already in W or not
+                    present = False
+                    for element in W.arr:
+                        if element[0] == neighbor:
+                            present = True
+                    if not present:
+                        W.insert((neighbor, distanceFunction(e,neighbor)))
+        # initializing minHeap for discarded connections
+        # this is a minHeap because if keepPruned is true, we might need to reference the distance again
+        WDiscard = minHeap()
+        # putting M best candidates from W into R
+        while W.size()>0 and R.size()<M:
+            closest = W.extractMin()
+            # comparing closest in W with largest in R, if applicable
+            if R.size()==0 or R.peekMax()[1] > closest[1]:
+                R.insert(closest)
+            else:
+                WDiscard.insert(closest)
+        # if we have less than M elements in R, lets the closest discarded elements in R
+        if keepPrunedConnections:
+            while WDiscard.size()>0 and R.size()<M:
+                closest = WDiscard.extractMin()
+                R.insert(closest)
+
+        # returning the max heap of up to M neighbors from the candidate list C
+        return R
+
+
