@@ -312,6 +312,57 @@ class kdTree(object):
     def constructTreeDriver(self):
         self.rootNode = self.constructTree(0,len(self.dataset)-1,0)
 
+    # actual function for knn in kd trees
+    # element is the basis element for comparison with kd trees
+    def kdTreeKNN(self,element,k, distanceFunction):
+        # initializing a max heap for storing our k best neighbors
+        # max heap because we want to compare the worst element with a new element for insertion
+        W = maxHeap()
+        # finding leaf node where this element would be inserted
+        self.kdTreeKNNHelper(element,k,W,self.rootNode, distanceFunction)
+        # now we have performed the recursive search
+        # returning the best neighbors of the element as a maxHeap
+        return W
+
+    def kdTreeKNNHelper(self,element,k,maxHeap, currentNode, distanceFunction):
+        if currentNode is None:
+            return
+        # doing a comparison
+        D = distanceFunction(element,currentNode.data)
+        if maxHeap.size()<k or maxHeap.peekMax()[1] > D:
+            if maxHeap.size() >=k:
+                maxHeap.extractMax()
+            maxHeap.insert((currentNode.data, D))
+        if currentNode.left is None and currentNode.right is None:
+            return
+        # traversing to place where element would be inserted
+        # because of the above if statement, at most one of the 2 subtrees can be None
+        nodeToRecurse = None
+        if element[currentNode.splitAxis] < currentNode.data[currentNode.splitAxis]:
+           nodeToRecurse = currentNode.left
+        else:
+           nodeToRecurse = currentNode.right
+
+        # traversing deeper in the tree
+        self.kdTreeKNNHelper(element,k,maxHeap,nodeToRecurse,distanceFunction)
+
+        # seeing if there might be anything better in the other subtree after recursion
+        currLargestDistance = maxHeap.peekMax()[1]
+        # reason we use the largest here is because we want k nearest neighbors, so if we can replace the worst neighbor in the heap, then we should
+        if nodeToRecurse == currentNode.left:
+            if element[currentNode.splitAxis] + currLargestDistance >= currentNode.data[currentNode.splitAxis]:
+                # then we also search the right subtree for better neighbors
+                self.kdTreeKNNHelper(element,k,maxHeap,currentNode.right,distanceFunction)
+        else:
+            if element[currentNode.splitAxis] - currLargestDistance <= currentNode.data[currentNode.splitAxis]:
+                # then we can also search the left subtree for better neighbors
+                self.kdTreeKNNHelper(element, k, maxHeap, currentNode.left, distanceFunction)
+
+
+
+
+
+
 class adjacencyVertices(object):
     def __init__(self,data):
        self.data = data
