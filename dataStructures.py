@@ -422,7 +422,7 @@ class multiLayerGraph(object):
         return R
     # enter points are the entrance points of the layer (list of vertex numbers)
     # e is the query element
-    # numNearest is the number of nearest neighbors to e in the layer to find
+    # numNearest is the size of the dynamic candidate array
     # layerNumber is the layer of interest to search in the graph
     def searchLayer(self,e,enterPoints,numNearest,layerNumber, distanceFunction):
         v = deepcopy(enterPoints)
@@ -556,6 +556,38 @@ class multiLayerGraph(object):
         if newLayer > topLevel:
             self.enterPoint = vertexNumber
         # done with insertion
+    # actual function for knn search
+    # element is the element to use as basic for knn comparisons
+    # k is the number of neighbors for knn
+    # numNearest is the size of the candidate array during search
+    def knnSearch(self, element,k, numNearest, distanceFunction):
+        W = None
+        # grabbing the enter point
+        enterPoints = [self.enterPoint]
+        topLayerIndex = len(self.layers)-1
+        for i in range(topLayerIndex,0,-1):
+            W = self.searchLayer(element,enterPoints,1,i,distanceFunction)
+            # result of search layer is a max heap, so we need linear time here to find the minimum in the array
+            minNeighbor = None
+            for neighbor in W.arr:
+                if minNeighbor is None or minNeighbor[1] > neighbor[1]:
+                    minNeighbor = neighbor
+            # now minNeighbor is a tuple of (vertex, distance) representing nearest neighbor in W to element
+            # setting the next enter point as the nearest neighbor in the current layer
+            enterPoints = [minNeighbor[0]]
+        # getting final neighbor list from layer 0 (the most dense layer)
+        W = self.searchLayer(element,enterPoints,numNearest,0,distanceFunction)
+        # heapifying W as a min heap instead of a max heap
+        WMin = minHeap()
+        WMin.heapify(W.arr)
+        # extracting K minimums from W
+        knn = []
+        while len(knn) < k:
+            knn.append(WMin.extractMin()[0])
+        # knn now holds the vertex numbers of the nearest neighbors to the inputted element
+        # to get the datapoints, we can just reference the vertex list
+        return knn
+
 
 
 
