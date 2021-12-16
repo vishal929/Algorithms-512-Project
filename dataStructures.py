@@ -470,6 +470,9 @@ class multiLayerGraph(object):
     def insertElement(self, newElement, M, MMax, MMax0, constructParam, normalizer, distanceFunction, usingHeuristic, keepPrunedConnections, extendCandidates=False):
         # firstly adding the newElement data to our list of vertices to keep a vertex number
         self.vertices.append(newElement)
+        # expanding current layers with an extra space for the new element
+        for layer in self.layers:
+            layer.append(None)
         # index of vertex in the vertex list
         vertexNumber = len(self.vertices)-1
         enterPoint = [self.enterPoint]
@@ -482,6 +485,15 @@ class multiLayerGraph(object):
         if randomUniform == 0:
             randomUniform = 1
         newLayer = int(-log(randomUniform) * normalizer)
+        # if the new layer has not yet been created, we need to propogate our layers
+        if newLayer > len(self.layers)-1:
+            # then we need to extend our layers until this layer has been created
+            while len(self.layers)-1 != newLayer:
+                newEdgeList = []
+                for i in range(len(self.vertices)):
+                    newEdgeList.append(None)
+                # appending the edge list to the layer
+                self.layers.append(newEdgeList)
         # newLayer+2 since range is not inclusive
         for i in range(topLevel,newLayer+2,1):
             # ef = 1
