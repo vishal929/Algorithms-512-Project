@@ -25,7 +25,34 @@ def insertionSortFeature(dataset, i,j, featureToUse):
         dataset[k] = temp
     # array is sorted in place
 
-
+def selectMedianOfMedians(L=list):
+    if len(L) < 10:
+        L.sort()
+        return L[int(len(L)/2)]
+    S = []
+    lIndex = 0
+    while lIndex+5 < len(L)-1:
+        S.append(L[lIndex:lIndex+5])
+        lIndex += 5
+    S.append(L[lIndex:])
+    median_list = []
+    for subList in S:
+        print(subList)
+        median_list.append(select(subList))
+        print(median_list)
+    medianOfmedians = select(median_list)
+    L1 = L3 = []
+    for i in L:
+        if i < medianOfmedians:
+            L1.append(i)
+        if i > medianOfmedians:
+            L3.append(i)
+    if len(L) < len(L1):
+        return select(L1)
+    elif len(L) > len(L1) + 1:
+        return select(L3)
+    else:
+        return medianOfmedians
 
 # helper function to get the median of medians of the portion of the dataset based on a specific feature
 def medianFeature(dataArray,i,j,featureToUse):
