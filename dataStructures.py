@@ -561,7 +561,6 @@ class multiLayerGraph(object):
     # k is the number of neighbors for knn
     # numNearest is the size of the candidate array during search
     def knnSearch(self, element,k, numNearest, distanceFunction):
-        W = None
         # grabbing the enter point
         enterPoints = [self.enterPoint]
         topLayerIndex = len(self.layers)-1
@@ -587,7 +586,17 @@ class multiLayerGraph(object):
         # knn now holds the vertex numbers of the nearest neighbors to the inputted element
         # to get the datapoints, we can just reference the vertex list
         return knn
-
+    # holistic function to construct the hierarchal navigable small worlds graph from data points
+    # reasonable value for M according to paper is from 5 to 48
+    # setting MMax to M or 2M resulted in the best performance according to the paper
+    # paper got good performance by setting efconstruction to 100
+    # anything higher got slightly better quality at the cost of significantly increased construction time
+    def buildGraph(self,distanceFunction, data, M, MMax, MMax0, efconstruction, usingHeuristic, keepPrunedConnections, extendCandidates=False):
+        # paper provided the optimal normalizing constant: 1/ln(M)
+        normalizingConstant = 1/log(M)
+        # building the multi-layer graph, one datapoint at a time
+        for datapoint in data:
+            self.insertElement(datapoint,M,MMax,MMax0,efconstruction,normalizingConstant,distanceFunction,usingHeuristic,keepPrunedConnections,extendCandidates)
 
 
 
