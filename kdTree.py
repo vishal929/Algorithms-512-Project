@@ -8,6 +8,13 @@ import dataGrabber
 # grabbing the iris dataset
 irisDataset = dataGrabber.grabIris()
 
+# testing insertion sort feature
+'''
+print("presorted: " + str(irisDataset[0:6]))
+ds.insertionSortFeature(irisDataset,0,5,0)
+print("postsorted: " + str(irisDataset[0:6]))
+'''
+
 # declaring the kd tree
 kdTree = ds.kdTree(irisDataset,4)
 

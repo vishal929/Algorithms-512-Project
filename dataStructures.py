@@ -12,18 +12,31 @@ def select(dataset,i,j,featureForSelection, k):
 # helper function to run insertion sort on part of an array based on a specific feature
 def insertionSortFeature(dataset, i,j, featureToUse):
     # sorts the array based on the feature using insertion sort
+    '''
+    print("presorted on feature: " + str(featureToUse))
+    print(dataset[i:j+1])
+    '''
+    if i==j:
+        return
     for k in range(i+1,j+1):
-        value = dataset[k][featureToUse]
+        tuple = dataset[k].copy()
+        #print("erai" + str(tuple))
+        value = tuple[featureToUse]
         lastIndex = k-1
-        lastValue = dataset[lastIndex][featureToUse]
-        while value < lastValue:
+        while lastIndex >=i and value < dataset[lastIndex][featureToUse]:
+            # swapping
+            dataset[lastIndex+1] = dataset[lastIndex]
+            #print("datasetSwap")
+            #print(dataset[i:j+1])
             lastIndex -= 1
-            lastValue = dataset[lastIndex][featureToUse]
-        # swap lastIndex +1 with the current k value
-        temp = dataset[lastIndex+1]
-        dataset[lastIndex+1] = dataset[k]
-        dataset[k] = temp
+        # setting the correct value index
+        #print(tuple)
+        dataset[lastIndex+1] = tuple
+        #print("done inserting")
+        #print(dataset[i:j+1])
     # array is sorted in place
+    #print("postsorted on feature: " + str(featureToUse))
+    #print(dataset[i:j + 1])
 
 
 
@@ -290,10 +303,11 @@ class kdTree(object):
     # featureToSplit is just the feature number to split the next level on (dimension)
     def constructTree(self,i,j,featureToSplit):
         # recursively constructing tree from the dataset for the kdtree
-        # resetting the feature split to "wrap around"
+
 
         if i == j:
             # then we only have 1 piece of data in this subtree
+            #print("added element at index: " + str(i))
             return kdNode(self.dataset[i], featureToSplit, None, None)
 
         if j<i:
@@ -306,11 +320,14 @@ class kdTree(object):
         mid = int((i+j)/2)
         # put logic below for selection of the mid value
         #mid = pivotFeature(self.dataset,i,j,featureToSplit)
-        # incrementing the feature to split on next
+
+        #print("added element at index " + str(mid))
+        parent = kdNode(self.dataset[mid],featureToSplit, None, None)
+        # incrementing the feature to split on for the next level
         featureToSplit += 1
+        # resetting the feature split to "wrap around"
         if featureToSplit >= self.numFeatures:
             featureToSplit = 0
-        parent = kdNode(self.dataset[mid],featureToSplit, None, None)
         parent.left = self.constructTree(i,mid-1,featureToSplit)
         parent.right = self.constructTree(mid+1,j,featureToSplit)
 
