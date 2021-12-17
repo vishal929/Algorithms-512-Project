@@ -110,7 +110,7 @@ class minHeap(object):
                 # then we are at the root, cant sift up anymore
                 continue
             # getting parent index
-            parent = (index-1)/2
+            parent = int((index-1)/2)
             if self.arr[parent][1] > self.arr[index][1]:
                 # then we have to swap and continue the sift up
                 temp = self.arr[parent]
@@ -154,11 +154,12 @@ class minHeap(object):
         maxData = self.arr[0]
         if len(self.arr) == 1:
             self.arr.pop()
-            return
+            return maxData
         # swapping root with leaf
         self.arr[0] = self.arr[len(self.arr)-1]
         # removing the leaf
-        self.arr.remove(len(self.arr)-1)
+        #self.arr.remove(len(self.arr)-1)
+        self.arr.pop(len(self.arr)-1)
         # sifting down
         self.siftDown(0)
         return maxData
@@ -194,7 +195,7 @@ class maxHeap(object):
                 # then we are at the root, cant sift up anymore
                 continue
             # getting parent index
-            parent = (index-1)/2
+            parent = int((index-1)/2)
             if self.arr[parent][1] < self.arr[index][1]:
                 # then we have to swap and continue the sift up
                 temp = self.arr[parent]
@@ -238,11 +239,12 @@ class maxHeap(object):
         maxData = self.arr[0]
         if len(self.arr) == 1:
             self.arr.pop()
-            return
+            return maxData
         # swapping root value with a leaf value
         self.arr[0] = self.arr[len(self.arr)-1]
         # removing the leaf value
-        self.arr.remove(len(self.arr)-1)
+        # self.arr.remove(len(self.arr)-1)
+        self.arr.pop(len(self.arr)-1)
         # sifting down
         self.siftDown(0)
         return maxData
@@ -400,10 +402,9 @@ class multiLayerGraph(object):
     def getNeighborhood(self, v, layerNumber):
         neighbors = []
         startNode = self.layers[layerNumber][v]
-        nextNode = startNode.next
-        while nextNode is not None:
-            neighbors.append(nextNode.vertex)
-            nextNode = nextNode.next
+        while startNode is not None:
+            neighbors.append(startNode.vertex)
+            startNode = startNode.next
         # returning vertex numbers of the neighbors in the layer
         return neighbors
 
@@ -478,6 +479,10 @@ class multiLayerGraph(object):
     def searchLayer(self,e,enterPoints,numNearest,layerNumber, distanceFunction):
         v = deepcopy(enterPoints)
         distanceArray = deepcopy(v)
+        # checking if we have 0 enterpoints (first insertion basically)
+        if len(v) == 1 and v[0] is None:
+            # returning an empty maxHeap
+            return maxHeap()
         for i in range(len(distanceArray)):
             dataTuple = self.vertices[distanceArray[i]]
             distanceArray[i] = (distanceArray[i], distanceFunction(e,dataTuple))
@@ -486,8 +491,10 @@ class multiLayerGraph(object):
         W = maxHeap()
         W.heapify(distanceArray)
         while C.size()>0:
-            closest = C.peekMin()
+            closest = C.extractMin()
+            #print(closest)
             furthest = W.peekMax()
+            #print(furthest)
             if closest[1] > furthest[1]:
                 # no more filtering to do
                 break
@@ -536,6 +543,7 @@ class multiLayerGraph(object):
         if randomUniform == 0:
             randomUniform = 1
         newLayer = int(-log(randomUniform) * normalizer)
+        #print("adding element: " + str(newElement) + " to layer: " + str(newLayer))
         # if the new layer has not yet been created, we need to propogate our layers
         if newLayer > len(self.layers)-1:
             # then we need to extend our layers until this layer has been created
@@ -546,7 +554,8 @@ class multiLayerGraph(object):
                 # appending the edge list to the layer
                 self.layers.append(newEdgeList)
         # newLayer+2 since range is not inclusive
-        for i in range(topLevel,newLayer+2,1):
+        for i in range(topLevel,newLayer+2,-1):
+            #print("starting greedy part 1")
             # ef = 1
             W = self.searchLayer(newElement,enterPoint,1,i,distanceFunction)
             # above is a maxHeap
@@ -556,9 +565,14 @@ class multiLayerGraph(object):
                if smallestTuple is None or smallestTuple[1]>element[1]:
                    smallestTuple = (element[0], element[1])
             # setting enter point for the future as the closest neighbor ("greedy")
-            enterPoint = [smallestTuple[0]]
+            if smallestTuple is None:
+                enterPoint = [None]
+            else:
+                enterPoint = [smallestTuple[0]]
         for i in range(min(topLevel,newLayer),-1,-1):
+            #print("starting part 2")
             W = self.searchLayer(newElement,enterPoint,constructParam,i,distanceFunction)
+            #print("done searching")
             # getting just array of vertex numbers
             vertexNumbers = []
             for element in W.arr:
@@ -607,6 +621,7 @@ class multiLayerGraph(object):
         if newLayer > topLevel:
             self.enterPoint = vertexNumber
         # done with insertion
+        #print("finished inserting element: " + str(newElement))
     # actual function for knn search
     # element is the element to use as basic for knn comparisons
     # k is the number of neighbors for knn
@@ -638,7 +653,7 @@ class multiLayerGraph(object):
         # to get the datapoints, we can just reference the vertex list
         return knn
     # holistic function to construct the hierarchal navigable small worlds graph from data points
-    # reasonable value for M according to paper is from 5 to 48
+    # reasonable value for M according to paper is from 6 to 48
     # setting MMax to M or 2M resulted in the best performance according to the paper
     # paper got good performance by setting efconstruction to 100
     # anything higher got slightly better quality at the cost of significantly increased construction time
