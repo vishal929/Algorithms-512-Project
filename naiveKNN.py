@@ -56,5 +56,5 @@ def naiveKNNHeap(e, data, k, distanceFunction):
                 # then we delete this neighbor and insert the candidate instead
                 nearest.extractMax()
                 nearest.insert((candidate,distance))
-    # returning the nearest neighbors to e in the dataset
+    # returning the nearest neighbors to e in the dataset as a maxHeap object
     return nearest

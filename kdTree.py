@@ -2,6 +2,7 @@
 
 import dataStructures as ds
 import dataGrabber
+import naiveKNN
 
 # lets test it on the iris dataset
 
@@ -19,12 +20,16 @@ print("postsorted: " + str(irisDataset[0:6]))
 kdTree = ds.kdTree(irisDataset,4)
 
 #printing all the nodes in the tree
-kdTree.printTree(kdTree.rootNode)
+#kdTree.printTree(kdTree.rootNode)
 
 # kd tree is automatically constructed from the data
 
 # lets test some knn
 nearest = kdTree.kdTreeKNN(irisDataset[0],5,dataGrabber.irisDistanceFunction)
 print(nearest.arr)
+
+# comparison of naive knn to kdtree knn (should be the same result)
+near = naiveKNN.naiveKNNHeap(irisDataset[0],irisDataset,5,dataGrabber.irisDistanceFunction)
+print(near.arr)
 
 
