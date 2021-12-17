@@ -464,9 +464,13 @@ class multiLayerGraph(object):
         # R is a max heap
         R = maxHeap()
         # min heap of candidate datapoints
-        # assuming that C has input as an array, so we have to heapify into W
+        # assuming that C has input as an array, so we have to heapify into W with distances
+        distanceArray = deepcopy(C)
+        for i in range(len(distanceArray)):
+            distanceArray[i] = (distanceArray[i], distanceFunction(e,self.vertices[distanceArray[i]]))
+
         W = minHeap()
-        W.heapify(C)
+        W.heapify(distanceArray)
         if extendCandidates:
             for candidate in C:
                 # candidate is the vertex number here
@@ -616,6 +620,7 @@ class multiLayerGraph(object):
             # neighbors are already in the list
             for neighbor in neighbors.arr:
                 # adding to front of the list
+                #print(neighbor)
                 newNode = adjacencyNode(neighbor[0])
                 anotherNode = adjacencyNode(vertexNumber)
                 # adding to front of list for the neighbor

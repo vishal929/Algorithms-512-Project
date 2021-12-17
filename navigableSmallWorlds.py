@@ -21,7 +21,7 @@ smallWorldsGraph = ds.multiLayerGraph()
 # lets set MMax = 2M
 # constructionParam should be 100
 M = 10
-smallWorldsGraph.buildGraph(dataGrabber.irisDistanceFunction,irisData,M,M,2*M,100,False,True)
+smallWorldsGraph.buildGraph(dataGrabber.irisDistanceFunction,irisData,M,M,2*M,100,True,True)
 
 # testing knn
 res = smallWorldsGraph.knnSearch(irisData[0],5,30,dataGrabber.irisDistanceFunction)
