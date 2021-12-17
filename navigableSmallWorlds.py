@@ -1,4 +1,5 @@
-# housing logic here for approximate k-nn using hierarchal small worlds structure
+# file gives an example of running the approximate KNN from hierarchical navigable small worlds
+
 # algorithms provided by TA from:
 # https://arxiv.org/ftp/arxiv/papers/1603/1603.09320.pdf
 
@@ -27,6 +28,8 @@ res = smallWorldsGraph.knnSearch(irisData[0],5,30,dataGrabber.irisDistanceFuncti
 actualRes = []
 for vertexNum in res:
     actualRes.append(smallWorldsGraph.vertices[vertexNum])
+
+# printing results
 print(actualRes)
 print("finished")
 

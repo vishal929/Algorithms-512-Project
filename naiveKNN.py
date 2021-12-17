@@ -1,4 +1,4 @@
-# idea here is to just have code for naive k-nn
+# this file houses the naive methods for k-nn on a dataset (straightforward to use, so no example provided for this)
 
 from dataStructures import maxHeap
 

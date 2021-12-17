@@ -1,4 +1,8 @@
 # python file that houses our defined data structures and some helper functions
+# data structures implemented:
+# min/max heap
+# KD tree
+# multilayer graph with hierarchical navigable small worlds functions
 
 from copy import deepcopy
 from math import log

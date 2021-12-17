@@ -1,4 +1,4 @@
-# houses logic for knn with kd trees
+# file houses an example for running knn on a dataset with a kdTree
 
 import dataStructures as ds
 import dataGrabber
