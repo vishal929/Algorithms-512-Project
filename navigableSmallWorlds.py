@@ -22,5 +22,11 @@ smallWorldsGraph = ds.multiLayerGraph()
 M = 10
 smallWorldsGraph.buildGraph(dataGrabber.irisDistanceFunction,irisData,M,M,2*M,100,False,True)
 
+# testing knn
+res = smallWorldsGraph.knnSearch(irisData[0],5,30,dataGrabber.irisDistanceFunction)
+actualRes = []
+for vertexNum in res:
+    actualRes.append(smallWorldsGraph.vertices[vertexNum])
+print(actualRes)
 print("finished")
 
