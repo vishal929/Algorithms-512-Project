@@ -270,12 +270,20 @@ class kdNode(object):
 class kdTree(object):
     # kdTree is defined by a root node
     # construction is defined by some dataset
-    def __init__(self,data):
+    # ASSUMES THAT FEATURES NOT IMPORTANT FOR SPLITTING ARE AT THE END OF THE DATA TUPLE!!!
+    def __init__(self,data, numFeatures):
         self.dataset = data
         # getting the number of features in the dataset based on the length of a data tuple
-        self.numFeatures = len(data[0])
+        self.numFeatures = numFeatures
         # constructing the kdtree from data and setting the root node
         self.rootNode = self.constructTreeDriver()
+    # printing the nodes in a tree
+    def printTree(self, node):
+        if node is None:
+            return
+        print(node.data)
+        self.printTree(node.left)
+        self.printTree(node.right)
     # recursive construction of a kdtree from a dataset
     # data is an array of element tuples where parts of the tuple are features
     # i and j are indices for recursion
@@ -283,8 +291,6 @@ class kdTree(object):
     def constructTree(self,i,j,featureToSplit):
         # recursively constructing tree from the dataset for the kdtree
         # resetting the feature split to "wrap around"
-        if featureToSplit > self.numFeatures:
-            featureToSplit=0
 
         if i == j:
             # then we only have 1 piece of data in this subtree
@@ -302,6 +308,8 @@ class kdTree(object):
         #mid = pivotFeature(self.dataset,i,j,featureToSplit)
         # incrementing the feature to split on next
         featureToSplit += 1
+        if featureToSplit >= self.numFeatures:
+            featureToSplit = 0
         parent = kdNode(self.dataset[mid],featureToSplit, None, None)
         parent.left = self.constructTree(i,mid-1,featureToSplit)
         parent.right = self.constructTree(mid+1,j,featureToSplit)
@@ -312,7 +320,7 @@ class kdTree(object):
     # driver to construct a tree recursively and set it as the root node
     # this is called during init with a dataset of tuples
     def constructTreeDriver(self):
-        self.rootNode = self.constructTree(0,len(self.dataset)-1,0)
+        return self.constructTree(0,len(self.dataset)-1,0)
 
     # actual function for knn in kd trees
     # element is the basis element for comparison with kd trees
