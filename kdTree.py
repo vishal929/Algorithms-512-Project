@@ -16,7 +16,7 @@ ds.insertionSortFeature(irisDataset,0,5,0)
 print("postsorted: " + str(irisDataset[0:6]))
 '''
 
-# declaring the kd tree
+# declaring the kd tree for our 4 comparable features in the iris dataset
 kdTree = ds.kdTree(irisDataset,4)
 
 #printing all the nodes in the tree
